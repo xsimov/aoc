@@ -16,23 +16,36 @@ defmodule Day2 do
   end
   defp execute_commands([], pid), do: State.get(pid)
 
-  defp process_order(_, num) when not num in 1..9, do: :error
   defp process_order("U", num), do: go_up(num)
   defp process_order("R", num), do: go_right(num)
   defp process_order("L", num), do: go_left(num)
   defp process_order("D", num), do: go_down(num)
 
-  defp go_up(num) when num in 1..3, do: num
-  defp go_up(num) when num in 3..9, do: num - 3
+  defp go_up(num) when num == 3, do: 1
+  defp go_up(num) when num in 6..8, do: num - 4
+  defp go_up(num) when num == "A", do: 6
+  defp go_up(num) when num == "B", do: 7
+  defp go_up(num) when num == "C", do: 8
+  defp go_up(num) when num == "D", do: "B"
+  defp go_up(num), do: num
 
-  defp go_down(num) when num in 1..6, do: num + 3
-  defp go_down(num) when num in 7..9, do: num
+  defp go_down(num) when num == 1, do: 3
+  defp go_down(num) when num in 2..4, do: num + 4
+  defp go_down(num) when num == 6, do: "A"
+  defp go_down(num) when num == 7, do: "B"
+  defp go_down(num) when num == 8, do: "C"
+  defp go_down(num) when num == "B", do: "D"
+  defp go_down(num), do: num
 
-  defp go_right(num) when num in [3,6,9], do: num
-  defp go_right(num) when num in [1,2,4,5,7,8], do: num + 1
+  defp go_right(num) when num in [2, 3, 5, 6, 7, 8], do: num + 1
+  defp go_right(num) when num == "A", do: "B"
+  defp go_right(num) when num == "B", do: "C"
+  defp go_right(num), do: num
 
-  defp go_left(num) when num in [1,4,7], do: num
-  defp go_left(num) when num in [2,3,5,6,8,9], do: num - 1
+  defp go_left(num) when num in [3, 4, 6, 7, 8, 9], do: num - 1
+  defp go_left(num) when num == "B", do: "A"
+  defp go_left(num) when num == "C", do: "B"
+  defp go_left(num), do: num
 end
 
 defmodule State do
