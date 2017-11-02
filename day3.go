@@ -3,54 +3,47 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 )
 
+type Triangle struct {
+	A, B, C int
+	IsLegal bool
+}
+
+var triangleRE = regexp.MustCompile(`\d+`)
+var count int
+
 func main() {
-	triangles, err := getTriangles()
+	tfile, err := ioutil.ReadFile("assets/day3.txt")
 	if err != nil {
-		log.Fatalf("could not import triangles: %v", err)
+		log.Fatalf("could not read file %v:", tfile)
 	}
-	fmt.Println(triangles)
-}
-
-func getTriangles() ([][]int, error) {
-	var path = flag.String("file", "assets/triangles.txt", "Select a file containing space-separated triangle values' lines")
-	var example = flag.String("example", "", "Pass in an example that will ignore the file path")
-
-	flag.Parse()
-
-	if *example != "" {
-		return extractTriangles([]string{*example})
-	}
-
-	if fileContents, err := ioutil.ReadFile(*path); err == nil {
-		return extractTriangles(strings.Split(string(fileContents), "\n"))
-	}
-
-	return nil, fmt.Errorf("error opening file: %v", *path)
-}
-
-func extractTriangles(lines []string) (triangles [][]int, err error) {
-	var triangle []int
-	for _, line := range lines {
-		splitted := strings.Split(line, " ")
-		for _, number := range splitted {
-			if number != "" {
-				num, err := strconv.Atoi(number)
-				if err != nil {
-					return nil, fmt.Errorf("could not convert %q from %q into an int", number, line)
-				}
-				triangle = append(triangle, num)
+	triangles := strings.Split(string(tfile), "\n")
+	for _, strTriangle := range triangles {
+		sides := make([]int, 3)
+		for i, side := range triangleRE.FindAllString(strTriangle, -1) {
+			intSide, err := strconv.Atoi(side)
+			if err != nil {
+				log.Fatalf("could not convert %v to int:", side)
 			}
+			sides[i] = intSide
 		}
-		triangles = append(triangles, triangle)
-		triangle = nil
+		triangle := Triangle{A: sides[0], B: sides[1], C: sides[2]}
+		if triangleIsLegal(triangle) {
+			triangle.IsLegal = true
+			count += 1
+		}
+		fmt.Println(triangle)
 	}
-	return
+	fmt.Println(count)
+}
+
+func triangleIsLegal(t Triangle) bool {
+	return t.A+t.B > t.C && t.B+t.C > t.A && t.C+t.A > t.B
 }
