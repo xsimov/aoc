@@ -8,12 +8,39 @@ import (
 	"log"
 	"regexp"
 	"strconv"
-	"strings"
 )
 
+type Side struct {
+	v   int
+	set bool
+}
+
+func (s *Side) IsNotFilled() bool {
+	return !s.set
+}
+
 type Triangle struct {
-	A, B, C int
-	IsLegal bool
+	A, B, C Side
+}
+
+func (t *Triangle) AddSide(s int) error {
+	if t.A.IsNotFilled() {
+		t.A = Side{s, true}
+		return nil
+	}
+	if t.B.IsNotFilled() {
+		t.B = Side{s, true}
+		return nil
+	}
+	if t.C.IsNotFilled() {
+		t.C = Side{s, true}
+		return nil
+	}
+	return fmt.Errorf("could not add side %v to t(%v)", s, t)
+}
+
+func (t Triangle) IsLegal() bool {
+	return t.A.v+t.B.v > t.C.v && t.B.v+t.C.v > t.A.v && t.C.v+t.A.v > t.B.v
 }
 
 var triangleRE = regexp.MustCompile(`\d+`)
@@ -24,26 +51,23 @@ func main() {
 	if err != nil {
 		log.Fatalf("could not read file %v:", tfile)
 	}
-	triangles := strings.Split(string(tfile), "\n")
-	for _, strTriangle := range triangles {
-		sides := make([]int, 3)
-		for i, side := range triangleRE.FindAllString(strTriangle, -1) {
-			intSide, err := strconv.Atoi(side)
-			if err != nil {
-				log.Fatalf("could not convert %v to int:", side)
-			}
-			sides[i] = intSide
-		}
-		triangle := Triangle{A: sides[0], B: sides[1], C: sides[2]}
-		if triangleIsLegal(triangle) {
-			triangle.IsLegal = true
+	for _, triangle := range getTriangles(tfile) {
+		if triangle.IsLegal() {
 			count += 1
 		}
-		fmt.Println(triangle)
 	}
+
 	fmt.Println(count)
 }
 
-func triangleIsLegal(t Triangle) bool {
-	return t.A+t.B > t.C && t.B+t.C > t.A && t.C+t.A > t.B
+func getTriangles(tfile []byte) []Triangle {
+	allSides := triangleRE.FindAllString(string(tfile), -1)
+	triangles := make([]Triangle, len(allSides)/3)
+
+	for i, side := range allSides {
+		position := i / 3
+		intSide, _ := strconv.Atoi(side)
+		triangles[position].AddSide(intSide)
+	}
+	return triangles
 }
