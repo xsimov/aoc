@@ -65,9 +65,17 @@ func getTriangles(tfile []byte) []Triangle {
 	triangles := make([]Triangle, len(allSides)/3)
 
 	for i, side := range allSides {
-		position := i / 3
+		position := verticalPositioned(i)
 		intSide, _ := strconv.Atoi(side)
 		triangles[position].AddSide(intSide)
 	}
 	return triangles
+}
+
+func horizontalPositioned(i int) int {
+	return i / 3
+}
+
+func verticalPositioned(i int) int {
+	return i%3 + (i / 9 * 3)
 }
