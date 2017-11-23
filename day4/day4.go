@@ -18,12 +18,14 @@ func main() {
 		log.Fatalf("could not import lines from file: %v", err)
 	}
 	for _, line := range lines {
-		Room := parseRoom(line)
-		if Room.isReal() {
-			sectorSum += Room.sectorId
+		room := parseRoom(line)
+		if room.isReal() {
+			room.decodeName()
+			if matched, _ := regexp.MatchString("(?i)(north)|(pole)", room.decodedName); matched {
+				fmt.Printf("Found the room: it is called %q and it is located in sector %v\n", room.decodedName, room.sectorId)
+			}
 		}
 	}
-	fmt.Println(sectorSum)
 }
 
 var encNameRE = regexp.MustCompile(`([a-z]+-)+`)
@@ -31,7 +33,7 @@ var sectorIdRE = regexp.MustCompile(`\d+`)
 var checksumRE = regexp.MustCompile(`\[([a-z]+)\]`)
 
 func parseRoom(s string) (r Room) {
-	r.name = encNameRE.FindAllString(s, -1)[0]
+	r.encodedName = encNameRE.FindAllString(s, -1)[0]
 
 	var cksum []string
 	c := checksumRE.FindStringSubmatch(s)[1]
@@ -46,11 +48,10 @@ func parseRoom(s string) (r Room) {
 }
 
 func readFileByLines() ([]string, error) {
-	tfile, err := ioutil.ReadFile("assets/day4.txt")
+	tfile, err := ioutil.ReadFile("../assets/day4.txt")
 	if err != nil {
 		return nil, fmt.Errorf("could not read file %v:", tfile)
 	}
 	lines := strings.Split(string(tfile), "\n")
-	allButLast := lines[:(len(lines) - 1)]
-	return allButLast, nil
+	return lines[:(len(lines) - 1)], nil
 }

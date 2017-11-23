@@ -1,27 +1,29 @@
 package main
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 )
 
 type Room struct {
-	name, checksum string
-	sectorId       int
+	decodedName, checksum, encodedName string
+	sectorId                           int
 }
 
 func (r *Room) isReal() bool {
 	letters := r.fiveMostCommonLettersInName()
 	sort.Strings(letters)
-	fmt.Println(strings.Join(letters, ""), r.checksum)
 	return strings.Join(letters, "") == r.checksum
+}
+
+func (r *Room) decodeName() {
+	r.decodedName = string(decryptCaesar(r.encodedName, r.sectorId))
 }
 
 func (r *Room) fiveMostCommonLettersInName() []string {
 	table := make(map[string]int)
 
-	for _, c := range r.name {
+	for _, c := range r.encodedName {
 		table[string(c)] += 1
 	}
 
@@ -52,4 +54,24 @@ func (r *Room) fiveMostCommonLettersInName() []string {
 	}
 
 	return orderedStr
+}
+
+func decryptCaesar(s string, i int) []rune {
+	c := shiftRune(s[0], i)
+	if len(s) > 1 {
+		return append([]rune{c}, decryptCaesar(s[1:], i)...)
+	}
+	return []rune{c}
+}
+
+func shiftRune(c byte, i int) rune {
+	if c == '-' {
+		return ' '
+	}
+	j := (int(c) - 97 + i) % 26
+	if j < 0 {
+		j += 26
+	}
+	j += 97
+	return rune(j)
 }
