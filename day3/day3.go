@@ -47,7 +47,7 @@ var triangleRE = regexp.MustCompile(`\d+`)
 var count int
 
 func main() {
-	tfile, err := ioutil.ReadFile("assets/day3.txt")
+	tfile, err := ioutil.ReadFile("../assets/day3.txt")
 	if err != nil {
 		log.Fatalf("could not read file %v:", tfile)
 	}
