@@ -3,19 +3,22 @@ package main
 import "fmt"
 
 type display struct {
-	columns, rows int
-	Matrix        [][]bool
+	x, y   int
+	Matrix [][]bool
 }
 
 func main() {
 	d := New(10, 6)
 	fmt.Println(d)
-	d.Rect(2, 3)
+	err := d.Rect(12, 3)
+	if err != nil {
+		fmt.Println("could not create rect:", err)
+	}
 	fmt.Println(d)
 }
 
 func New(columns, rows int) *display {
-	d := display{columns: columns, rows: rows}
+	d := display{x: columns, y: rows}
 	d.Matrix = make([][]bool, 0)
 	for i := 0; i < rows; i++ {
 		d.Matrix = append(d.Matrix, make([]bool, columns))
@@ -25,9 +28,9 @@ func New(columns, rows int) *display {
 
 func (d *display) String() string {
 	var s, r string
-	for i := 0; i < d.rows; i++ {
+	for i := 0; i < d.y; i++ {
 		r = fmt.Sprintf("[")
-		for j := 0; j < d.columns; j++ {
+		for j := 0; j < d.x; j++ {
 			r = fmt.Sprintf("%s%6v", r, d.Matrix[i][j])
 		}
 		r = fmt.Sprintf("%s ]\n", r)
@@ -36,10 +39,30 @@ func (d *display) String() string {
 	return s
 }
 
-func (d *display) Rect(x, y int) {
+func (d *display) Rotate(direction string, index, by int) (err error) {
+	switch direction {
+	case "row":
+		err = d.rotateRow(index, by)
+	case "column":
+		err = d.rotateColumn(index, by)
+	default:
+		return fmt.Errorf("direction must be \"column\" or \"row\", and got: %v", direction)
+	}
+	return err
+}
+
+func (d *display) Rect(x, y int) error {
+	if d.boundaryViolation(x, y) {
+		return fmt.Errorf("could not execute Rect, there is a boundary violation: [%v %v] exceeds [%v %v]", x, y, d.x, d.y)
+	}
 	for i := 0; i <= x; i++ {
 		for j := 0; j <= y; j++ {
 			d.Matrix[i][j] = true
 		}
 	}
+	return nil
+}
+
+func (d *display) boundaryViolation(x, y int) bool {
+	return x >= d.x || y >= d.y
 }
