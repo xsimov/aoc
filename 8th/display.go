@@ -2,31 +2,35 @@ package main
 
 import "fmt"
 
-type display struct {
+type Display struct {
 	x, y   int
 	Matrix [][]bool
 }
 
 func main() {
-	d := New(10, 6)
-	fmt.Println(d)
-	err := d.Rect(12, 3)
-	if err != nil {
-		fmt.Println("could not create rect:", err)
-	}
-	fmt.Println(d)
+	i, err := newInstructionFromString("rect 3x2")
+	r := i.(rectInstruction)
+	fmt.Println(r.X, r.Y, err)
+	// d := NewDisplay(10, 6)
+	// fmt.Println(d)
+	// err := d.Rect(12, 3)
+	// if err != nil {
+	// 	fmt.Println("could not create rect:", err)
+	// }
+	// fmt.Println(d)
 }
 
-func New(columns, rows int) *display {
-	d := display{x: columns, y: rows}
+// NewDisplay returns a new instance of Display
+func NewDisplay(columns, rows int) Display {
+	d := Display{x: columns, y: rows}
 	d.Matrix = make([][]bool, 0)
 	for i := 0; i < rows; i++ {
 		d.Matrix = append(d.Matrix, make([]bool, columns))
 	}
-	return &d
+	return d
 }
 
-func (d *display) String() string {
+func (d Display) String() string {
 	var s, r string
 	for i := 0; i < d.y; i++ {
 		r = fmt.Sprintf("[")
@@ -39,7 +43,7 @@ func (d *display) String() string {
 	return s
 }
 
-func (d *display) Rotate(direction string, index, by int) (err error) {
+func (d Display) Rotate(direction string, index, by int) (err error) {
 	switch direction {
 	case "row":
 		err = d.rotateRow(index, by)
@@ -51,7 +55,7 @@ func (d *display) Rotate(direction string, index, by int) (err error) {
 	return err
 }
 
-func (d *display) Rect(x, y int) error {
+func (d Display) Rect(x, y int) error {
 	if d.boundaryViolation(x, y) {
 		return fmt.Errorf("could not execute Rect, there is a boundary violation: [%v %v] exceeds [%v %v]", x, y, d.x, d.y)
 	}
@@ -63,6 +67,14 @@ func (d *display) Rect(x, y int) error {
 	return nil
 }
 
-func (d *display) boundaryViolation(x, y int) bool {
+func (d Display) boundaryViolation(x, y int) bool {
 	return x >= d.x || y >= d.y
+}
+
+func (d Display) rotateRow(index, by int) error {
+	return nil
+}
+
+func (d Display) rotateColumn(index, by int) error {
+	return nil
 }
