@@ -7,7 +7,6 @@ import (
 )
 
 type Instruction interface {
-	Command() string
 	Execute(Display) error
 }
 
@@ -61,16 +60,8 @@ func newRectInstruction(splitted []string) (rectInstruction, error) {
 	return rectInstruction{X: x, Y: y}, nil
 }
 
-func (rectInstruction) Command() string {
-	return "rect"
-}
-
 func (i rectInstruction) Execute(d Display) error {
 	return d.Rect(i.X, i.Y)
-}
-
-func (rotateInstruction) Command() string {
-	return "rotate"
 }
 
 func (i rotateInstruction) Execute(d Display) error {

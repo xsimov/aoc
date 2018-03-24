@@ -29,9 +29,6 @@ func TestRectInstructionFieldsAreAssigned(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected error to be nil, but was: %v", err)
 	}
-	if r.Command() != "rect" {
-		t.Fatalf("expected command to be 'rect' and it was %q", r.Command())
-	}
 	if r.X != 3 {
 		t.Fatalf("expected x to be 3 and it was %v", r.X)
 	}
@@ -67,9 +64,6 @@ func TestInstructionBuilderWithRotate(t *testing.T) {
 	r := i.(rotateInstruction)
 	if err != nil {
 		t.Fatalf("expected error to be nil, but was: %v", err)
-	}
-	if r.Command() != "rotate" {
-		t.Fatalf("expected command to be 'rotate' and it was %q", r.Command())
 	}
 	if r.Index != 1 {
 		t.Fatalf("expected index to be 1 and it was %v", r.Index)
