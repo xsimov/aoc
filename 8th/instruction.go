@@ -34,6 +34,9 @@ func newInstructionFromString(s string) (i Instruction, err error) {
 }
 
 func newRotateInstruction(splitted []string) (rotateInstruction, error) {
+	if len(splitted) < 5 {
+		return rotateInstruction{}, fmt.Errorf("rotate instruction could not be parsed from %q", splitted)
+	}
 	strIndex := strings.Split(splitted[2], "=")[1]
 	index, err := strconv.Atoi(strIndex)
 	if err != nil {

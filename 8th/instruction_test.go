@@ -15,6 +15,17 @@ func TestInstructionBuilderWithInvalidCommand(t *testing.T) {
 	}
 }
 
+func TestInstructionBuilderWithInvalidCommandArguments(t *testing.T) {
+	_, err := newInstructionFromString("rotate stupid stuff")
+	if err == nil {
+		t.Fatalf("expected error not to be nil, but it was")
+	}
+	expectedError := `rotate instruction could not be parsed from ["rotate" "stupid" "stuff"]`
+	if err.Error() != expectedError {
+		t.Fatalf("error (%q) was different from expected error: %q", err.Error(), expectedError)
+	}
+}
+
 func TestInstructionBuilderWithRectangle(t *testing.T) {
 	i, _ := newInstructionFromString("rect 3x2")
 	_, ok := i.(rectInstruction)
@@ -40,9 +51,9 @@ func TestRectInstructionFieldsAreAssigned(t *testing.T) {
 func TestInstructionBuilderWithRectangleIncorrectX(t *testing.T) {
 	_, err := newInstructionFromString("rect sx8")
 	if err == nil {
-		t.Fatalf("expected error not to be nil but it was: %v", err)
+		t.Fatalf("expected error not to be nil but it was!")
 	}
-	expectedError := `instruction first argument must be rect or rotate, got "gibberish" instead (from "gibberish 3x2")`
+	expectedError := `strconv.Atoi: parsing "s": invalid syntax`
 	if err.Error() != expectedError {
 		t.Fatalf("error (%q) was different from expected error: %q", err.Error(), expectedError)
 	}
@@ -53,13 +64,43 @@ func TestInstructionBuilderWithRectangleIncorrectY(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error not to be nil but it was: %v", err)
 	}
-	expectedError := `instruction first argument must be rect or rotate, got "gibberish" instead (from "gibberish 3x2")`
+	expectedError := `strconv.Atoi: parsing "d": invalid syntax`
 	if err.Error() != expectedError {
 		t.Fatalf("error (%q) was different from expected error: %q", err.Error(), expectedError)
 	}
 }
 
 func TestInstructionBuilderWithRotate(t *testing.T) {
+	i, _ := newInstructionFromString("rotate row y=1 by 5")
+	_, ok := i.(rotateInstruction)
+	if !ok {
+		t.Fatalf("expected %v(%T) to be of type rotateInstruction", i, i)
+	}
+}
+
+func TestInstructionBuilderWithRotateIncorrectIndex(t *testing.T) {
+	_, err := newInstructionFromString("rotate row y=z by 5")
+	if err == nil {
+		t.Fatalf("expected error not to be nil but it was!")
+	}
+	expectedError := `strconv.Atoi: parsing "z": invalid syntax`
+	if err.Error() != expectedError {
+		t.Fatalf("error (%q) was different from expected error: %q", err.Error(), expectedError)
+	}
+}
+
+func TestInstructionBuilderWithRotateIncorrectBy(t *testing.T) {
+	_, err := newInstructionFromString("rotate row y=7 by o")
+	if err == nil {
+		t.Fatalf("expected error not to be nil but it was!")
+	}
+	expectedError := `strconv.Atoi: parsing "o": invalid syntax`
+	if err.Error() != expectedError {
+		t.Fatalf("error (%q) was different from expected error: %q", err.Error(), expectedError)
+	}
+}
+
+func TestRotateInstructionFieldsAreAssigned(t *testing.T) {
 	i, err := newInstructionFromString("rotate row y=1 by 5")
 	r := i.(rotateInstruction)
 	if err != nil {
@@ -70,5 +111,13 @@ func TestInstructionBuilderWithRotate(t *testing.T) {
 	}
 	if r.Direction != "row" {
 		t.Fatalf("expected direction to be row and it was %v", r.Direction)
+	}
+}
+
+func TestRectInstructionExecuteCallsRectUponDisplay(t *testing.T) {
+	i, _ := newInstructionFromString("rect 3x2")
+	d := Display{}
+	if err := i.Execute(d); err != nil {
+		t.Fatalf("expected error to be nil and it was: %v", err)
 	}
 }
