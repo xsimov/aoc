@@ -116,7 +116,7 @@ func TestRotateInstructionFieldsAreAssigned(t *testing.T) {
 
 func TestRectInstructionExecuteCallsRectUponDisplay(t *testing.T) {
 	i, _ := newInstructionFromString("rect 3x2")
-	d := Display{}
+	d := NewDisplay(4, 4)
 	if err := i.Execute(d); err != nil {
 		t.Fatalf("expected error to be nil and it was: %v", err)
 	}

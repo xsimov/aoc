@@ -1,49 +1,84 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"strings"
+)
 
+// Display simulator
 type Display struct {
-	x, y   int
-	Matrix [][]bool
+	columns, rows int
+	Matrix        [][]bool
 }
 
 func main() {
-	i, err := newInstructionFromString("rect 3x2")
-	r := i.(rectInstruction)
-	fmt.Println(r.X, r.Y, err)
-	// d := NewDisplay(10, 6)
-	// fmt.Println(d)
-	// err := d.Rect(12, 3)
-	// if err != nil {
-	// 	fmt.Println("could not create rect:", err)
-	// }
-	// fmt.Println(d)
+	f, err := os.Open("../assets/day8.txt")
+	if err != nil {
+		log.Fatalf("could not open file: %v", err)
+	}
+	content, err := ioutil.ReadAll(f)
+	if err != nil {
+		log.Fatalf("could not read contents: %v", err)
+	}
+	instructions := strings.Split(string(content), "\n")
+
+	d := NewDisplay(50, 16)
+
+	for index, s := range instructions {
+		if s == "" {
+			continue
+		}
+		i, _ := newInstructionFromString(s)
+		fmt.Println(d, i, index)
+		i.Execute(d)
+	}
+	fmt.Println(d, d.countPixelsOn())
 }
 
 // NewDisplay returns a new instance of Display
 func NewDisplay(columns, rows int) Display {
-	d := Display{x: columns, y: rows}
+	d := Display{columns: columns, rows: rows}
 	d.Matrix = make([][]bool, 0)
 	for i := 0; i < rows; i++ {
 		d.Matrix = append(d.Matrix, make([]bool, columns))
 	}
 	return d
 }
+func (d Display) countPixelsOn() int {
+	var count int
+	for i := 0; i < d.rows; i++ {
+		for j := 0; j < d.columns; j++ {
+			if d.Matrix[i][j] {
+				count++
+			}
+		}
+	}
+	return count
+}
 
 func (d Display) String() string {
 	var s, r string
-	for i := 0; i < d.y; i++ {
+	var c rune
+	for i := 0; i < 6; i++ {
 		r = fmt.Sprintf("[")
-		for j := 0; j < d.x; j++ {
-			r = fmt.Sprintf("%s%6v", r, d.Matrix[i][j])
+		for j := 0; j < d.columns; j++ {
+			if d.Matrix[i][j] {
+				c = '#'
+			} else {
+				c = '-'
+			}
+			r = fmt.Sprintf("%s%2c", r, c)
 		}
 		r = fmt.Sprintf("%s ]\n", r)
-		s = fmt.Sprintf("%s\n%s", s, r)
+		s = fmt.Sprintf("%s%s", s, r)
 	}
 	return s
 }
 
-func (d Display) Rotate(direction string, index, by int) (err error) {
+func (d Display) rotate(direction string, index, by int) (err error) {
 	switch direction {
 	case "row":
 		err = d.rotateRow(index, by)
@@ -55,12 +90,12 @@ func (d Display) Rotate(direction string, index, by int) (err error) {
 	return err
 }
 
-func (d Display) Rect(x, y int) error {
+func (d Display) rect(x, y int) error {
 	if d.boundaryViolation(x, y) {
-		return fmt.Errorf("could not execute Rect, there is a boundary violation: [%v %v] exceeds [%v %v]", x, y, d.x, d.y)
+		return fmt.Errorf("could not execute Rect, there is a boundary violation: [%v %v] exceeds [%v %v]", x, y, d.columns, d.rows)
 	}
-	for i := 0; i <= x; i++ {
-		for j := 0; j <= y; j++ {
+	for i := 0; i < y; i++ {
+		for j := 0; j < x; j++ {
 			d.Matrix[i][j] = true
 		}
 	}
@@ -68,13 +103,24 @@ func (d Display) Rect(x, y int) error {
 }
 
 func (d Display) boundaryViolation(x, y int) bool {
-	return x >= d.x || y >= d.y
+	return x >= d.rows || y >= d.columns
 }
 
 func (d Display) rotateRow(index, by int) error {
+	cpy := make([]bool, d.columns)
+	copy(cpy[by:len(d.Matrix[index])], d.Matrix[index][:(d.columns-by)])
+	copy(cpy[:by], d.Matrix[index][d.columns-by:])
+	copy(d.Matrix[index], cpy)
 	return nil
 }
 
 func (d Display) rotateColumn(index, by int) error {
+	cpy := make([]bool, d.rows)
+	for c := 0; c < d.rows; c++ {
+		cpy[(c+by)%d.rows] = d.Matrix[c][index]
+	}
+	for c := 0; c < d.rows; c++ {
+		d.Matrix[c][index] = cpy[c]
+	}
 	return nil
 }

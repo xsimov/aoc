@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// Instruction must be executable upon a Display
 type Instruction interface {
 	Execute(Display) error
 }
@@ -64,9 +65,9 @@ func newRectInstruction(splitted []string) (rectInstruction, error) {
 }
 
 func (i rectInstruction) Execute(d Display) error {
-	return d.Rect(i.X, i.Y)
+	return d.rect(i.X, i.Y)
 }
 
 func (i rotateInstruction) Execute(d Display) error {
-	return d.Rotate(i.Direction, i.Index, i.By)
+	return d.rotate(i.Direction, i.Index, i.By)
 }
